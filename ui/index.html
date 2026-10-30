@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Umbral</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="brand-mark" aria-hidden="true"></div><div class="brand-name">Umbral</div></div>
+    <nav class="nav" role="tablist" aria-label="Secciones">
+      <button role="tab" aria-selected="true" data-view="play">Jugar</button>
+      <button role="tab" aria-selected="false" data-view="mods">Mods <span class="count" id="modcount">0</span></button>
+      <button role="tab" aria-selected="false" data-view="settings">Ajustes</button>
+    </nav>
+    <div class="account" id="account">
+      <div class="who"><span class="avatar" id="avatar" aria-hidden="true"></span><span id="acc-name">Sin sesión</span></div>
+      <small id="acc-sub">Cuenta de Microsoft</small>
+    </div>
+  </aside>
+
+  <main class="main"><div class="inner">
+
+    <section class="view" id="view-play">
+      <h1 id="play-title">Umbral</h1>
+      <p class="lead" id="play-lead">Cargando…</p>
+      <div class="hero">
+        <div class="panel play-card">
+          <div class="version">
+            <div><span>Minecraft</span><span id="v-mc">–</span></div>
+            <div><span>Forge</span><span id="v-forge">–</span></div>
+            <div><span>Modpack</span><span id="v-pack">–</span></div>
+          </div>
+          <div>
+            <div class="progress" id="progress" aria-hidden="true"><i id="bar"></i></div>
+            <div class="status-line" id="status" role="status" aria-live="polite"></div>
+          </div>
+          <div class="error" id="error" role="alert" hidden></div>
+          <button class="btn-play" id="play">Jugar</button>
+          <button class="link" id="cancel-login" hidden>Cancelar inicio de sesión</button>
+        </div>
+        <div class="panel srv">
+          <h2>Servidor</h2>
+          <div id="srv-body"><p class="note">Sin servidor configurado. Añádelo en Ajustes para entrar directo al jugar.</p></div>
+          <h2 class="mt">Novedades <span class="mono" id="news-ver"></span></h2>
+          <ul class="changes" id="news"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-mods" hidden>
+      <h1>Mods</h1>
+      <p class="lead">El modpack base viene fijo. Puedes activar mods extra de la lista permitida; los cambios se aplican la próxima vez que pulses Jugar. Cualquier otro mod que pongas en la carpeta se aparta a «mods-desactivados».</p>
+      <div class="stack">
+        <div class="panel">
+          <div class="row spread head"><h2>Mods extra</h2><span class="chip" id="extrachip">0 activos</span></div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Mod</th><th>Tipo</th><th>Activo</th></tr></thead>
+              <tbody id="extras"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="row spread head"><h2>Modpack base</h2><span class="chip">Fijo</span></div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>Mod</th><th>Dónde actúa</th><th>Qué hace</th></tr></thead>
+              <tbody id="base"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-settings" hidden>
+      <h1>Ajustes</h1>
+      <p class="lead">Se guardan en este equipo y se aplican la próxima vez que pulses Jugar.</p>
+      <div class="stack">
+        <form class="panel stack" id="settings-form">
+          <div class="field">
+            <label for="server">Servidor</label>
+            <input id="server" type="text" placeholder="play.ejemplo.com o 192.168.1.20:25565" autocomplete="off" spellcheck="false">
+            <span class="note">Si lo rellenas, el juego entra directo al servidor. Vacío abre el menú principal.</span>
+          </div>
+          <div class="field">
+            <div class="row spread"><label for="ram">Memoria para el juego</label><span class="mono" id="ramval">6 GB</span></div>
+            <input type="range" id="ram" min="2" max="16" step="1" value="6">
+            <div class="ram-scale"><span>2 GB</span><span>recomendado 6-8 GB</span><span>16 GB</span></div>
+            <span class="note" id="ramnote"></span>
+          </div>
+          <div class="row"><button class="btn primary" type="submit" id="save">Guardar ajustes</button><span class="note" id="saved" role="status"></span></div>
+        </form>
+        <div class="grid2">
+          <div class="panel stack">
+            <h2>Carpetas</h2>
+            <div class="row wrap">
+              <button class="btn" data-folder="juego">Carpeta del juego</button>
+              <button class="btn" data-folder="capturas">Capturas</button>
+              <button class="btn" data-folder="registros">Registros</button>
+            </div>
+            <span class="note mono" id="datadir"></span>
+          </div>
+          <div class="panel stack">
+            <h2>Cuenta</h2>
+            <p class="note" id="acc-detail">Sin sesión.</p>
+            <div class="row"><button class="btn" id="logout" hidden>Cerrar sesión</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot" id="foot"></div>
+  </div></main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
