@@ -50,7 +50,8 @@ La prueba deja el juego abierto: hay que cerrarlo a mano.
 
 ## Sin probar
 
-- Una actualización real publicada en GitHub: el launcher y el modpack solo se han actualizado desde el servidor local.
+- Una actualización del launcher publicada en GitHub: solo se ha hecho desde el servidor local. La del modpack sí se comprobó, de 1.0.0 a 1.1.0, con Epic Fight 20.14.17 y Weapons of Miracles 2.0.171. El juego siguió abierto 30 segundos tras cargar; el registro muestra un error de WoM al leer la animación `valkyrie_idle`.
+- El combate de Epic Fight y WoM con las clases de Umbral 0.3.0 dentro de un mundo.
 - El modo oficial contra el launcher real de Minecraft. Solo tiene pruebas sobre carpetas temporales, para no tocar el `.minecraft` del equipo.
 - El inicio de sesión de Microsoft con una cuenta real: requiere un `CLIENT_ID` aprobado.
 - El asistente gráfico del instalador, página por página.
