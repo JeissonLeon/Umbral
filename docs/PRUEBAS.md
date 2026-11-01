@@ -46,9 +46,11 @@ La prueba deja el juego abierto: hay que cerrarlo a mano.
 
 **Instalador.** `UmbralSetup.exe` en modo silencioso, en una carpeta elegida: creó los archivos, los accesos directos y el registro de desinstalación, y el launcher abrió su ventana WebView2 real. La desinstalación silenciosa quitó programa, accesos y registro, y conservó los datos.
 
+**GitHub.** Los flujos `Pruebas` y `Publicar` terminaron bien y publicaron `sylvanor3-1.0.0-1` en JeissonLeon/Umbral. Con el `UmbralSetup.exe` descargado de esa versión se instaló el launcher, luego el modpack desde GitHub con sus 8 mods, y `TestArranqueReal` abrió el juego desde esa instancia. El modo de inicio oficial y el botón Jugar no intervinieron: la prueba arranca el juego directamente.
+
 ## Sin probar
 
-- Publicar en GitHub y ejecutar los flujos de GitHub Actions: aún no hay repositorio.
+- Una actualización real publicada en GitHub: el launcher y el modpack solo se han actualizado desde el servidor local.
 - El modo oficial contra el launcher real de Minecraft. Solo tiene pruebas sobre carpetas temporales, para no tocar el `.minecraft` del equipo.
 - El inicio de sesión de Microsoft con una cuenta real: requiere un `CLIENT_ID` aprobado.
 - El asistente gráfico del instalador, página por página.
