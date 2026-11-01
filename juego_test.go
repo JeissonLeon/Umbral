@@ -23,6 +23,9 @@ func TestArranqueReal(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// Umbral solo aparece en el registro al crear su configuración.
+	os.Remove(filepath.Join(paths.Instance, "config", "umbral_sombras-client.toml"))
+	os.Remove(filepath.Join(paths.Instance, "config", "umbral_sombras-common.toml"))
 	java := javaBinary(filepath.Join(paths.Runtime, vanilla.JavaVersion.Component))
 	acc := &Account{Name: "PruebaUmbral", UUID: "00000000000000000000000000000000", AccessToken: "0"}
 	args, err := buildLaunchArgs(paths, Config{MemoryMB: 4096}, acc, vanilla, "1.20.1-forge-47.4.10")
@@ -55,7 +58,14 @@ func TestArranqueReal(t *testing.T) {
 				if !strings.Contains(text, "umbral_sombras") {
 					t.Error("el registro no menciona el mod Umbral")
 				}
-				t.Log(tail(text))
+				select {
+				case err := <-done:
+					data, _ := os.ReadFile(logPath)
+					t.Fatalf("el juego se cerró tras cargar (%v):\n%s", err, tail(string(data)))
+				case <-time.After(30 * time.Second):
+				}
+				data, _ = os.ReadFile(latest)
+				t.Log(tail(string(data)))
 				return // la prueba la cierra el sistema operativo con taskkill
 			}
 		}

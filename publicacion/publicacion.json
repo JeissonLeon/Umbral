@@ -16,7 +16,7 @@
   "seed": [],
   "opcionales": [],
   "novedades": [
-    "Primera versión publicada con Umbral Launcher."
+    "Añadidos Epic Fight y Weapons of Miracles."
   ],
   "externos": [
     {
@@ -66,6 +66,20 @@
       "url": "https://cdn.modrinth.com/data/2gvRmQXx/versions/n947JjJH/radium-mc1.20.1-0.12.4%2Bgit.26c9d8e.jar",
       "name": "Radium",
       "description": "Ticks más estables del mundo y las entidades",
+      "optional": false
+    },
+    {
+      "path": "mods/epic-fight-20.14.17-mc1.20.1-forge.jar",
+      "url": "https://cdn.modrinth.com/data/vu3NZ5Ma/versions/KEBfkBat/epic-fight-20.14.17-mc1.20.1-forge.jar",
+      "name": "Epic Fight",
+      "description": "Combate con animaciones, posturas y habilidades de arma",
+      "optional": false
+    },
+    {
+      "path": "mods/WeaponsOfMiracles-2.0.171-mc1.20.1-forge.jar",
+      "url": "https://cdn.modrinth.com/data/oWx9p4ug/versions/nf0AyjKh/WeaponsOfMiracles-2.0.171-mc1.20.1-forge.jar",
+      "name": "Weapons of Miracles",
+      "description": "Armas y estilos de combate nuevos para Epic Fight",
       "optional": false
     },
     {

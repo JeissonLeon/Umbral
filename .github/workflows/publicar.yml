@@ -43,6 +43,7 @@ jobs:
       - name: Generar y firmar el manifiesto
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
           UMBRAL_SIGNING_KEY: ${{ secrets.UMBRAL_SIGNING_KEY }}
           V: ${{ inputs.version }}
           LV: ${{ inputs.launcher_version }}
@@ -54,6 +55,10 @@ jobs:
             mkdir -p dist/lanzar
             cp dist/UmbralLauncher.exe dist/umbral-updater.exe dist/lanzar/
             args+=(--launcher-dir dist/lanzar --launcher-version "$LV" --setup dist/UmbralSetup.exe)
+          elif [[ "$PRIMERA" != "true" ]]; then
+            # El enlace de descarga apunta a la última versión: el instalador pasa a cada una.
+            gh release download --pattern UmbralSetup.exe --dir dist
+            args+=(--setup dist/UmbralSetup.exe)
           fi
           go run ./cmd/umbral-publisher release "${args[@]}"
       - name: Publicar en GitHub Releases
