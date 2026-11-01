@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -132,10 +131,10 @@ func withFake(t *testing.T) (*fakeMicrosoft, Paths) {
 }
 
 func TestBrowserLoginCompleto(t *testing.T) {
-	f, paths := withFake(t)
+	f, _ := withFake(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	acc, err := browserLogin(ctx, "cliente-prueba", paths)
+	acc, err := browserLogin(ctx, "cliente-prueba")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,19 +144,12 @@ func TestBrowserLoginCompleto(t *testing.T) {
 	if f.codeGrants != 1 {
 		t.Fatalf("se esperaba un canje de código, hubo %d", f.codeGrants)
 	}
-	saved := loadAccount(paths)
-	if saved == nil || saved.Name != "Steve" {
-		t.Fatal("la sesión no se guardó en auth.json")
-	}
-	if fi, _ := os.Stat(authFile(paths)); fi.Mode().Perm()&0o077 != 0 && os.PathSeparator == '/' {
-		t.Fatalf("auth.json no debería ser legible por otros: %v", fi.Mode())
-	}
 }
 
 func TestSesionCaducadaSeRenueva(t *testing.T) {
-	f, paths := withFake(t)
+	f, _ := withFake(t)
 	old := &Account{RefreshToken: "refresco-1", AccessToken: "viejo", Expires: time.Now().Add(-time.Hour)}
-	acc, err := ensureSession("cliente-prueba", paths, old)
+	acc, err := ensureSession("cliente-prueba", old)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,63 +159,45 @@ func TestSesionCaducadaSeRenueva(t *testing.T) {
 }
 
 func TestRefreshInvalidoPideLogin(t *testing.T) {
-	_, paths := withFake(t)
-	saveAccount(paths, &Account{RefreshToken: "otro"})
-	_, err := ensureSession("cliente-prueba", paths, &Account{RefreshToken: "otro", Expires: time.Now().Add(-time.Hour)})
+	withFake(t)
+	_, err := ensureSession("cliente-prueba", &Account{RefreshToken: "otro", Expires: time.Now().Add(-time.Hour)})
 	if !errors.Is(err, errNeedLogin) {
 		t.Fatalf("se esperaba errNeedLogin, llegó %v", err)
-	}
-	if loadAccount(paths) != nil {
-		t.Fatal("la sesión inválida debería borrarse")
 	}
 }
 
 func TestCuentaSinMinecraft(t *testing.T) {
-	f, paths := withFake(t)
+	f, _ := withFake(t)
 	f.noGame = true
-	_, err := browserLogin(context.Background(), "cliente-prueba", paths)
+	_, err := browserLogin(context.Background(), "cliente-prueba")
 	if !errors.Is(err, errNoGame) {
 		t.Fatalf("se esperaba errNoGame, llegó %v", err)
 	}
 }
 
 func TestErrorXSTSExplicado(t *testing.T) {
-	f, paths := withFake(t)
+	f, _ := withFake(t)
 	f.xstsErr = 2148916233
-	_, err := browserLogin(context.Background(), "cliente-prueba", paths)
+	_, err := browserLogin(context.Background(), "cliente-prueba")
 	if err == nil || !strings.Contains(err.Error(), "perfil de Xbox") {
 		t.Fatalf("mensaje inesperado: %v", err)
 	}
 }
 
 func TestLoginSinClientID(t *testing.T) {
-	_, paths := withFake(t)
-	if _, err := browserLogin(context.Background(), "", paths); err == nil {
+	withFake(t)
+	if _, err := browserLogin(context.Background(), ""); err == nil {
 		t.Fatal("sin client ID no debería intentar iniciar sesión")
 	}
 }
 
 func TestLoginCancelado(t *testing.T) {
-	_, paths := withFake(t)
+	withFake(t)
 	openURL = func(string) {} // el jugador nunca termina en el navegador
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() { time.Sleep(100 * time.Millisecond); cancel() }()
-	if _, err := browserLogin(ctx, "cliente-prueba", paths); err == nil {
+	if _, err := browserLogin(ctx, "cliente-prueba"); err == nil {
 		t.Fatal("se esperaba error al cancelar")
-	}
-}
-
-func TestManifiestoInterno(t *testing.T) {
-	m, err := parseManifest(manifestJSON)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if m.Minecraft != "1.20.1" || len(m.Mods) == 0 {
-		t.Fatalf("manifiesto inesperado: %+v", m)
-	}
-	bad := strings.Replace(string(manifestJSON), `"archivo": "embeddium`, `"archivo": "../embeddium`, 1)
-	if _, err := parseManifest([]byte(bad)); err == nil {
-		t.Fatal("un nombre de archivo con ruta debería rechazarse")
 	}
 }
 
@@ -299,21 +273,5 @@ func TestServidorLocalExigeToken(t *testing.T) {
 	resp, _ = http.DefaultClient.Do(req)
 	if resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("un Host ajeno debería dar 403, dio %d", resp.StatusCode)
-	}
-}
-
-func TestManifiestoRemotoYCopiaLocal(t *testing.T) {
-	_, paths := withFake(t)
-	remote := strings.Replace(string(manifestJSON), `"version_modpack": "0.1.0"`, `"version_modpack": "9.9.9"`, 1)
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Write([]byte(remote)) }))
-	if m := loadManifest(paths, srv.URL); m.ModpackVersion != "9.9.9" {
-		t.Fatalf("no se usó el manifiesto remoto: %s", m.ModpackVersion)
-	}
-	srv.Close()
-	if m := loadManifest(paths, srv.URL); m.ModpackVersion != "9.9.9" {
-		t.Fatalf("sin conexión debería usar la copia local: %s", m.ModpackVersion)
-	}
-	if m := loadManifest(paths, ""); m.ModpackVersion != "0.1.0" {
-		t.Fatalf("sin URL debería usar el interno: %s", m.ModpackVersion)
 	}
 }

@@ -1,73 +1,72 @@
 # Umbral Launcher
 
-Launcher del modpack Umbral para Windows. El jugador instala `UmbralSetup.exe`, inicia sesión con la cuenta de Microsoft con la que compró Minecraft: Java Edition, y el launcher descarga e instala todo lo demás: Minecraft 1.20.1, Java 17, Forge 47.4.10, el paquete de optimización y los mods extra que active.
+Launcher de **SylvanΩr 3** (Minecraft 1.20.1, Forge 47.4.10, Java 17) para Windows. El jugador instala `UmbralSetup.exe`; el launcher descarga el juego y el modpack, lo mantiene igual que la versión publicada en GitHub y se actualiza a sí mismo. No hay servidor propio, base de datos ni cuentas de Umbral: GitHub Releases es toda la infraestructura.
 
 ## Qué hace
 
 | Parte | Detalle |
 | --- | --- |
-| Instalador | Instala en `%LOCALAPPDATA%\Programs\Umbral` sin pedir administrador, crea accesos directos en escritorio y menú Inicio, y aparece en "Agregar o quitar programas". Al desinstalar pregunta si borrar también los datos del juego. |
-| Inicio de sesión | Flujo oficial de Microsoft en el navegador del sistema (OAuth con PKCE). El launcher nunca ve la contraseña. Comprueba que la cuenta tenga Minecraft Java y renueva la sesión sola. |
-| Instalación del juego | Java oficial de Mojang, Minecraft, recursos, Forge con su instalador oficial y mods de Modrinth. Todo se verifica por huella SHA-1 y solo se descarga lo que falta. |
-| Mods | Modpack base fijo y mods extra de una lista permitida, que el jugador activa desde la pestaña Mods. Cualquier otro `.jar` se aparta a `mods-desactivados`. |
-| Servidor | Muestra estado, jugadores y latencia del servidor configurado. Al jugar entra directo a él. |
-| Actualizaciones | El modpack se puede actualizar publicando un manifiesto remoto, sin reinstalar el launcher. |
+| Instalador | NSIS. Por usuario, sin administrador, con carpeta a elegir, accesos directos y entrada en "Agregar o quitar programas". Comprueba Windows 10+ de 64 bits y WebView2. |
+| Instalación del juego | Java oficial de Mojang (o el tuyo), Minecraft, recursos y Forge con su instalador oficial, en una instancia aislada (`%APPDATA%\umbral`). |
+| Reconciliación | Compara cada archivo por SHA-256 con el manifiesto firmado: añade, reemplaza, restaura y elimina solo lo necesario. Lo que no registró nunca lo borra. |
+| Recuperación | Descargas reanudables, verificación antes de tocar nada, transacción con respaldo y marcha atrás si algo falla o se corta. |
+| Autoactualización | `umbral-updater.exe` reemplaza el launcher, comprueba que la versión nueva arranque y, si no, restaura la anterior. |
+| Publicación | `umbral-publisher` genera y firma el manifiesto y sube a GitHub Releases; también desde GitHub Actions. |
 
-Datos del jugador: `%APPDATA%\umbral` (juego en `instancia`, registro del launcher en `launcher.log`, registro del juego en `instancia\logs\umbral-juego.log`).
+## Cómo se abre el juego
 
-## Antes de distribuirlo: registrar la aplicación de Microsoft
+Umbral prepara la instancia; la cuenta de Minecraft es de otro. Se elige en Ajustes:
 
-Sin este paso el launcher se abre pero no puede iniciar sesión.
+| Modo | Qué hace | Credenciales |
+| --- | --- | --- |
+| **Launcher oficial** (por defecto) | Añade Forge y un perfil «SylvanΩr 3» al launcher oficial y lo abre. Ahí se pulsa Jugar. | Las gestiona Minecraft |
+| **Otro launcher** | Solo instala y actualiza; indica la carpeta para Prism, ATLauncher, etc. | Las gestiona ese launcher |
+| **Directo con Microsoft** | Abre el juego desde Umbral. Solo aparece si compilas con `CLIENT_ID` (requiere registrar la app en Azure y la aprobación de Mojang). | Solo en memoria; nunca en disco |
 
-1. Entra en [portal.azure.com](https://portal.azure.com) → **Microsoft Entra ID** → **Registros de aplicaciones** → **Nuevo registro**.
-2. Nombre: `Umbral Launcher`. Tipos de cuenta: **Solo cuentas personales de Microsoft**.
-3. URI de redirección: plataforma **Cliente público/nativo (móvil y escritorio)**, valor `http://localhost`.
-4. Pulsa **Registrar** y copia el **Id. de aplicación (cliente)**.
-5. Mojang tiene que aprobar las aplicaciones nuevas antes de que puedan usar el inicio de sesión de Minecraft. Envía tu ID de aplicación en su formulario de revisión (aka.ms/mce-reviewappid). Mientras no lo aprueben, el launcher muestra "Mojang aún no ha aprobado la aplicación de Azure de este launcher".
-6. Compila con ese ID (siguiente sección).
+No hay modo sin cuenta: hace falta una copia original de Minecraft: Java Edition.
 
 ## Compilar
 
-Requiere Go 1.24+ y NSIS (`makensis`). En Linux: `sudo apt install nsis`.
+Requiere Go 1.24+ y NSIS (`makensis`).
 
+```bash
+VERSION=1.0.0 MANIFEST_URL=https://github.com/<owner>/<repo>/releases/latest/download/manifest.json ./build.sh
 ```
-CLIENT_ID=<id de aplicación> ./build.sh
-```
 
-Genera `dist/UmbralLauncher.exe` y `dist/UmbralSetup.exe`. Lo que se reparte es `UmbralSetup.exe`.
+Genera en `dist/`: `UmbralSetup.exe` (lo que se reparte), `UmbralLauncher.exe`, `umbral-updater.exe` y `umbral-publisher.exe`.
 
-Variables opcionales:
-
-| Variable | Uso |
-| --- | --- |
-| `MANIFEST_URL` | URL de un `manifiesto.json` publicado (por ejemplo en GitHub). El launcher lo consulta al pulsar Jugar y guarda copia para jugar sin conexión. |
-| `VERSION` | Versión del launcher y del instalador (por defecto 0.2.0). |
-
-## Actualizar el modpack
-
-Edita `manifiesto.json`: versiones de Minecraft y Forge, mods base (`mods`), mods extra permitidos (`extras`) y novedades. Cada mod necesita nombre de archivo, URL y SHA-1. Si compilaste con `MANIFEST_URL`, basta con publicar el archivo nuevo en esa URL; si no, recompila.
-
-## Avisos para los jugadores
-
-- **SmartScreen:** al no estar firmado, Windows puede mostrar "Windows protegió su PC". Se abre con **Más información → Ejecutar de todas formas**. Un certificado de firma de código lo evita.
-- **WebView2:** la ventana usa Microsoft Edge WebView2, incluido en Windows 10 y 11. Si falta, el instalador y el launcher ofrecen descargarlo.
-- **Ajustes:** servidor y memoria se cambian en la pestaña Ajustes.
-
-## Desarrollo
-
-Fuera de Windows la interfaz se abre en el navegador, lo que permite probarla:
-
-```
-UMBRAL_HOME=/tmp/umbral go run .
+```bash
 go test ./...
 ```
 
-| Archivo | Contenido |
+## Documentación
+
+| Documento | Para qué |
+| --- | --- |
+| [docs/INSTALACION.md](docs/INSTALACION.md) | Instalar y resolver problemas, para jugadores |
+| [docs/ADMINISTRAR_GITHUB.md](docs/ADMINISTRAR_GITHUB.md) | Preparar el repositorio, la clave y los permisos |
+| [docs/PUBLICAR_MODPACK.md](docs/PUBLICAR_MODPACK.md) | Publicar una actualización del modpack |
+| [docs/PUBLICAR_LAUNCHER.md](docs/PUBLICAR_LAUNCHER.md) | Publicar una actualización del launcher |
+| [docs/MANIFIESTO.md](docs/MANIFIESTO.md) | Formato del manifiesto y reglas de propiedad de archivos |
+| [docs/SEGURIDAD.md](docs/SEGURIDAD.md) | Firmas, rotación de claves, ofuscación y multijugador |
+| [docs/PRUEBAS.md](docs/PRUEBAS.md) | Qué se probó y cómo |
+| [config.ejemplo.json](config.ejemplo.json) | Ajustes del jugador |
+
+## Código
+
+| Ruta | Contenido |
 | --- | --- |
 | `main.go`, `app.go`, `server.go`, `events.go` | Arranque, estado, API local y eventos para la interfaz |
-| `auth.go` | Inicio de sesión de Microsoft, Xbox Live y Minecraft |
-| `mojang.go`, `java.go`, `forge.go`, `mods.go`, `launch.go` | Instalación y arranque del juego |
-| `ping.go` | Estado del servidor de Minecraft |
-| `window_windows.go`, `window_other.go` | Ventana WebView2 y utilidades por sistema |
-| `ui/` | Interfaz (HTML, CSS, JS) |
+| `manifest.go` | Descarga y verificación del manifiesto, copia local, anti-retroceso |
+| `mojang.go`, `java.go`, `forge.go`, `mods.go` | Preparación de Minecraft |
+| `launchers.go`, `launch.go`, `auth.go` | Modos de arranque |
+| `config.go`, `ping.go` | Ajustes y estado del servidor |
+| `window_*.go`, `ui/` | Ventana WebView2 e interfaz |
+| `internal/pack` | Esquema, firma, descargas y reconciliación |
+| `internal/selfupdate` | Lógica de autoactualización |
+| `cmd/umbral-updater`, `cmd/umbral-publisher` | Ejecutables auxiliares |
+| `publicacion/` | Definición del modpack que se publica |
 | `installer/umbral.nsi` | Instalador |
+| `tools/` | Ensayo de publicaciones sin GitHub |
+
+Para desarrollar: `UMBRAL_HOME=<carpeta> UMBRAL_NO_WINDOW=1 go run .` sirve la interfaz para abrirla en un navegador.

@@ -16,8 +16,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -42,40 +40,20 @@ var (
 	errLoginCanceled = errors.New("inicio de sesión cancelado")
 )
 
-// Account es la sesión de Minecraft guardada en auth.json.
+// Account es la sesión de Minecraft del modo de inicio directo. Solo existe en
+// memoria mientras el launcher está abierto: nunca se escribe a disco.
 type Account struct {
-	RefreshToken string    `json:"refresh_token"`
-	AccessToken  string    `json:"minecraft_token"`
-	Expires      time.Time `json:"expira"`
-	UUID         string    `json:"uuid"`
-	Name         string    `json:"nombre"`
+	RefreshToken string
+	AccessToken  string
+	Expires      time.Time
+	UUID         string
+	Name         string
 }
-
-func authFile(paths Paths) string { return filepath.Join(paths.Root, "auth.json") }
-
-func loadAccount(paths Paths) *Account {
-	data, err := os.ReadFile(authFile(paths))
-	if err != nil {
-		return nil
-	}
-	var acc Account
-	if json.Unmarshal(data, &acc) != nil || acc.RefreshToken == "" {
-		return nil
-	}
-	return &acc
-}
-
-func saveAccount(paths Paths, acc *Account) error {
-	out, _ := json.MarshalIndent(acc, "", "  ")
-	return os.WriteFile(authFile(paths), out, 0o600)
-}
-
-func deleteAccount(paths Paths) { os.Remove(authFile(paths)) }
 
 // ensureSession devuelve una sesión válida para jugar, renovándola con el
 // refresh token si caducó. Comprueba también que la cuenta siga teniendo
 // Minecraft Java.
-func ensureSession(clientID string, paths Paths, acc *Account) (*Account, error) {
+func ensureSession(clientID string, acc *Account) (*Account, error) {
 	if acc == nil {
 		return nil, errNeedLogin
 	}
@@ -97,20 +75,15 @@ func ensureSession(clientID string, paths Paths, acc *Account) (*Account, error)
 	})
 	if err != nil {
 		log.Println("No se pudo renovar la sesión:", err)
-		deleteAccount(paths)
 		return nil, errNeedLogin
 	}
-	fresh, err := minecraftFromMicrosoft(ms)
-	if err != nil {
-		return nil, err
-	}
-	return fresh, saveAccount(paths, fresh)
+	return minecraftFromMicrosoft(ms)
 }
 
 // browserLogin abre la página de Microsoft en el navegador del sistema y
 // recibe la respuesta en un puerto local (OAuth con PKCE). El launcher nunca
 // ve la contraseña.
-func browserLogin(ctx context.Context, clientID string, paths Paths) (*Account, error) {
+func browserLogin(ctx context.Context, clientID string) (*Account, error) {
 	if clientID == "" {
 		return nil, errors.New("este launcher se compiló sin ID de aplicación de Microsoft; mira LEEME.md")
 	}
@@ -193,11 +166,7 @@ func browserLogin(ctx context.Context, clientID string, paths Paths) (*Account, 
 	if err != nil {
 		return nil, fmt.Errorf("Microsoft rechazó el inicio de sesión: %w", err)
 	}
-	acc, err := minecraftFromMicrosoft(ms)
-	if err != nil {
-		return nil, err
-	}
-	return acc, saveAccount(paths, acc)
+	return minecraftFromMicrosoft(ms)
 }
 
 // callbackHandler lo fija cada intento de inicio de sesión.

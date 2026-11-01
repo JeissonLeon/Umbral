@@ -30,14 +30,25 @@ func (a *App) serve() (string, error) {
 	mux.HandleFunc("POST /api/sesion/cancelar", action(func(*http.Request) error { a.cancelLoginAttempt(); return nil }))
 	mux.HandleFunc("POST /api/sesion/cerrar", action(func(*http.Request) error { return a.logout() }))
 	mux.HandleFunc("POST /api/ajustes", action(func(r *http.Request) error {
+		var body settingsInput
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			return err
+		}
+		return a.updateSettings(body)
+	}))
+	mux.HandleFunc("POST /api/instalar", action(func(*http.Request) error { return a.install() }))
+	mux.HandleFunc("POST /api/comprobar", action(func(*http.Request) error { return a.checkNow() }))
+	mux.HandleFunc("POST /api/cancelar", action(func(*http.Request) error { a.cancelOperation(); return nil }))
+	mux.HandleFunc("POST /api/launcher/actualizar", action(func(*http.Request) error { return a.updateLauncher() }))
+	mux.HandleFunc("GET /api/diagnostico", func(w http.ResponseWriter, r *http.Request) { writeJSON(w, a.diagnostics()) })
+	mux.HandleFunc("POST /api/ubicacion", action(func(r *http.Request) error {
 		var body struct {
-			Server   string `json:"servidor"`
-			MemoryMB int    `json:"memoria_mb"`
+			Dir string `json:"carpeta"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			return err
 		}
-		return a.updateSettings(body.Server, body.MemoryMB)
+		return a.moveData(body.Dir)
 	}))
 	mux.HandleFunc("POST /api/extra", action(func(r *http.Request) error {
 		var body struct {

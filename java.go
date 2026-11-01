@@ -48,6 +48,11 @@ func gameJavaBinary(java string) string {
 	return java
 }
 
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
+}
+
 // ensureJava descarga el Java oficial que Mojang publica para esta versión
 // del juego, así el jugador no necesita instalar nada.
 func ensureJava(paths Paths, component string) (string, error) {
@@ -65,6 +70,10 @@ func ensureJava(paths Paths, component string) (string, error) {
 		} `json:"manifest"`
 	}
 	if err := getJSON(javaRuntimesURL, &all); err != nil {
+		// Sin conexión vale el Java ya descargado, para poder jugar igual.
+		if bin := javaBinary(filepath.Join(paths.Runtime, component)); fileExists(bin) {
+			return bin, nil
+		}
 		return "", fmt.Errorf("no se pudo leer la lista de Java de Mojang: %w", err)
 	}
 	entries := all[platform][component]

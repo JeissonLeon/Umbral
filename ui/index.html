@@ -3,119 +3,169 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Umbral</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap">
+<title>SylvanΩr 3</title>
 <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
+<canvas id="scene" aria-hidden="true"></canvas>
 <div class="app">
-  <aside class="side">
-    <div class="brand"><div class="brand-mark" aria-hidden="true"></div><div class="brand-name">Umbral</div></div>
-    <nav class="nav" role="tablist" aria-label="Secciones">
-      <button role="tab" aria-selected="true" data-view="play">Jugar</button>
-      <button role="tab" aria-selected="false" data-view="mods">Mods <span class="count" id="modcount">0</span></button>
-      <button role="tab" aria-selected="false" data-view="settings">Ajustes</button>
+  <header class="top">
+    <canvas id="logo" role="img" aria-label="SylvanΩr 3"></canvas>
+    <p id="tagline"></p>
+  </header>
+
+  <main class="stage">
+    <section class="panel" id="view-play" aria-labelledby="play-title">
+      <h1 id="play-title">Cargando</h1>
+      <p id="play-lead"></p>
+
+      <dl class="facts">
+        <div><dt>Instalada</dt><dd id="v-pack">–</dd></div>
+        <div><dt>Minecraft</dt><dd id="v-mc">–</dd></div>
+        <div><dt>Forge</dt><dd id="v-forge">–</dd></div>
+        <div><dt>Umbral</dt><dd id="v-umbral">–</dd></div>
+      </dl>
+
+      <div id="install" hidden>
+        <ol class="steps" id="steps">
+          <li data-step="Buscando">Buscar actualizaciones</li>
+          <li data-step="Minecraft">Minecraft y recursos</li>
+          <li data-step="Java">Java</li>
+          <li data-step="Forge">Forge</li>
+          <li data-step="Sincronizando">Archivos del modpack</li>
+          <li data-step="Abriendo">Abrir el juego</li>
+        </ol>
+        <div class="bar" id="bar-wrap" role="progressbar" aria-label="Progreso total" aria-valuemin="0" aria-valuemax="100"><i id="bar"></i></div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+        <p class="status file" id="status-file"></p>
+        <button class="btn" id="cancel" type="button">Cancelar</button>
+      </div>
+
+      <div class="notice" id="notice" role="status" hidden></div>
+      <div class="error" id="error" role="alert" hidden>
+        <p id="error-text"></p>
+        <button class="btn" id="retry" type="button">Reintentar</button>
+      </div>
+
+      <div class="launcher-new" id="launcher-new" hidden>
+        <p id="launcher-new-text"></p>
+        <button class="btn" id="launcher-update" type="button">Actualizar el launcher</button>
+      </div>
+
+      <div id="server-box" hidden>
+        <h2>Servidor</h2>
+        <p id="srv-body"></p>
+      </div>
+      <div id="news-box" hidden>
+        <h2>Novedades</h2>
+        <ul id="news"></ul>
+      </div>
+      <button class="btn link" id="cancel-login" type="button" hidden>Cancelar inicio de sesión</button>
+    </section>
+
+    <section class="panel" id="view-updates" aria-labelledby="up-title" hidden>
+      <h1 id="up-title">Actualizaciones</h1>
+      <p id="up-lead"></p>
+      <dl class="facts">
+        <div><dt>Tienes</dt><dd id="up-current">–</dd></div>
+        <div><dt>Publicada</dt><dd id="up-new">–</dd></div>
+        <div><dt>A descargar</dt><dd id="up-bytes">–</dd></div>
+      </dl>
+      <div class="changes" id="up-changes"></div>
+      <div class="row">
+        <button class="btn primary" id="up-apply" type="button">Actualizar ahora</button>
+        <button class="btn" id="up-check" type="button">Buscar y revisar archivos</button>
+      </div>
+    </section>
+
+    <section class="panel" id="view-mods" aria-labelledby="mods-title" hidden>
+      <h1 id="mods-title">Mods</h1>
+      <p>Los mods del modpack vienen fijos. Los opcionales se instalan o se quitan la próxima vez que actualices. Cualquier otro .jar que dejes en la carpeta pasa a «mods-desactivados» sin borrarse.</p>
+      <div id="extras-box" hidden>
+        <h2>Opcionales</h2>
+        <div class="slots" id="extras"></div>
+      </div>
+      <h2>Del modpack</h2>
+      <div class="slots" id="base"></div>
+    </section>
+
+    <section class="panel" id="view-settings" aria-labelledby="set-title" hidden>
+      <h1 id="set-title">Ajustes</h1>
+      <form id="settings-form">
+        <div class="field">
+          <label for="mode">Cómo se abre el juego</label>
+          <select id="mode">
+            <option value="oficial">Launcher oficial de Minecraft</option>
+            <option value="externo">Otro launcher (solo preparar la instancia)</option>
+            <option value="microsoft" id="mode-ms">Directo con cuenta de Microsoft</option>
+          </select>
+          <small id="mode-note"></small>
+        </div>
+        <div class="field">
+          <label for="ram">Memoria para el juego: <span id="ramval">6 GB</span></label>
+          <input type="range" id="ram" min="2" max="16" step="1" value="6">
+          <small id="ramnote"></small>
+        </div>
+        <div class="field">
+          <label for="server">Servidor</label>
+          <input id="server" type="text" placeholder="play.ejemplo.com" autocomplete="off" spellcheck="false">
+          <small>Se muestra su estado aquí. Con inicio directo, el juego entra a él al abrirse.</small>
+        </div>
+        <div class="field">
+          <label for="mcdir">Carpeta del launcher oficial</label>
+          <input id="mcdir" type="text" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="java">Ruta de Java (opcional)</label>
+          <input id="java" type="text" placeholder="Vacío: Umbral descarga el Java oficial de Mojang" autocomplete="off" spellcheck="false">
+          <small>Debe ser Java 17. Ruta completa a java.exe.</small>
+        </div>
+        <div class="field">
+          <label for="javaargs">Opciones de Java (opcional)</label>
+          <input id="javaargs" type="text" placeholder="-XX:+UseG1GC" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="row"><button class="btn primary" type="submit">Guardar ajustes</button><span id="saved" role="status"></span></div>
+      </form>
+
+      <h2>Directorio de instalación</h2>
+      <form class="row" id="location-form">
+        <input id="datadir" type="text" autocomplete="off" spellcheck="false" aria-label="Directorio de instalación">
+        <button class="btn" type="submit">Cambiar y reiniciar</button>
+      </form>
+      <small>El modpack se instala de nuevo en la carpeta elegida. La anterior no se toca: bórrala tú si ya no la quieres.</small>
+
+      <h2>Carpetas y registros</h2>
+      <div class="row wrap">
+        <button class="btn" type="button" data-folder="juego">Instancia</button>
+        <button class="btn" type="button" data-folder="capturas">Capturas</button>
+        <button class="btn" type="button" data-folder="registros">Registros del juego</button>
+        <button class="btn" type="button" data-folder="launcher">Registros del launcher</button>
+      </div>
+
+      <h2>Diagnóstico</h2>
+      <div class="row"><button class="btn" type="button" id="diag-btn">Ver diagnóstico</button><button class="btn" type="button" id="diag-copy" hidden>Copiar</button></div>
+      <pre id="diag" hidden></pre>
+
+      <div id="account-box" hidden>
+        <h2>Cuenta</h2>
+        <p id="acc-detail"></p>
+        <button class="btn" type="button" id="logout" hidden>Cerrar sesión</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="hotbar">
+    <nav role="tablist" aria-label="Secciones">
+      <button role="tab" type="button" aria-selected="true" data-view="play"><svg viewBox="0 0 8 8"><path d="M1 0h1v1h1v1h1v1h1v1h1v1H5v1H4v1H3V6H2v1H1z"/></svg><span>Inicio</span></button>
+      <button role="tab" type="button" aria-selected="false" data-view="updates"><svg viewBox="0 0 8 8"><path d="M3 0h2v3h2v1H6v1H5v1H3V5H2V4H1V3h2zM0 7h8v1H0z"/></svg><span>Actualizaciones</span><b id="up-dot" hidden></b></button>
+      <button role="tab" type="button" aria-selected="false" data-view="mods"><svg viewBox="0 0 8 8"><path d="M1 1h6v1h1v5H0V2h1zm1 2v3h4V3z"/></svg><span>Mods</span></button>
+      <button role="tab" type="button" aria-selected="false" data-view="settings"><svg viewBox="0 0 8 8"><path d="M3 0h2v1h2v2h1v2H7v2H5v1H3V7H1V5H0V3h1V1h2zm0 3v2h2V3z" fill-rule="evenodd"/></svg><span>Ajustes</span></button>
     </nav>
-    <div class="account" id="account">
-      <div class="who"><span class="avatar" id="avatar" aria-hidden="true"></span><span id="acc-name">Sin sesión</span></div>
-      <small id="acc-sub">Cuenta de Microsoft</small>
-    </div>
-  </aside>
-
-  <main class="main"><div class="inner">
-
-    <section class="view" id="view-play">
-      <h1 id="play-title">Umbral</h1>
-      <p class="lead" id="play-lead">Cargando…</p>
-      <div class="hero">
-        <div class="panel play-card">
-          <div class="version">
-            <div><span>Minecraft</span><span id="v-mc">–</span></div>
-            <div><span>Forge</span><span id="v-forge">–</span></div>
-            <div><span>Modpack</span><span id="v-pack">–</span></div>
-          </div>
-          <div>
-            <div class="progress" id="progress" aria-hidden="true"><i id="bar"></i></div>
-            <div class="status-line" id="status" role="status" aria-live="polite"></div>
-          </div>
-          <div class="error" id="error" role="alert" hidden></div>
-          <button class="btn-play" id="play">Jugar</button>
-          <button class="link" id="cancel-login" hidden>Cancelar inicio de sesión</button>
-        </div>
-        <div class="panel srv">
-          <h2>Servidor</h2>
-          <div id="srv-body"><p class="note">Sin servidor configurado. Añádelo en Ajustes para entrar directo al jugar.</p></div>
-          <h2 class="mt">Novedades <span class="mono" id="news-ver"></span></h2>
-          <ul class="changes" id="news"></ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="view-mods" hidden>
-      <h1>Mods</h1>
-      <p class="lead">El modpack base viene fijo. Puedes activar mods extra de la lista permitida; los cambios se aplican la próxima vez que pulses Jugar. Cualquier otro mod que pongas en la carpeta se aparta a «mods-desactivados».</p>
-      <div class="stack">
-        <div class="panel">
-          <div class="row spread head"><h2>Mods extra</h2><span class="chip" id="extrachip">0 activos</span></div>
-          <div class="tablewrap">
-            <table>
-              <thead><tr><th>Mod</th><th>Tipo</th><th>Activo</th></tr></thead>
-              <tbody id="extras"></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="row spread head"><h2>Modpack base</h2><span class="chip">Fijo</span></div>
-          <div class="tablewrap">
-            <table>
-              <thead><tr><th>Mod</th><th>Dónde actúa</th><th>Qué hace</th></tr></thead>
-              <tbody id="base"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="view-settings" hidden>
-      <h1>Ajustes</h1>
-      <p class="lead">Se guardan en este equipo y se aplican la próxima vez que pulses Jugar.</p>
-      <div class="stack">
-        <form class="panel stack" id="settings-form">
-          <div class="field">
-            <label for="server">Servidor</label>
-            <input id="server" type="text" placeholder="play.ejemplo.com o 192.168.1.20:25565" autocomplete="off" spellcheck="false">
-            <span class="note">Si lo rellenas, el juego entra directo al servidor. Vacío abre el menú principal.</span>
-          </div>
-          <div class="field">
-            <div class="row spread"><label for="ram">Memoria para el juego</label><span class="mono" id="ramval">6 GB</span></div>
-            <input type="range" id="ram" min="2" max="16" step="1" value="6">
-            <div class="ram-scale"><span>2 GB</span><span>recomendado 6-8 GB</span><span>16 GB</span></div>
-            <span class="note" id="ramnote"></span>
-          </div>
-          <div class="row"><button class="btn primary" type="submit" id="save">Guardar ajustes</button><span class="note" id="saved" role="status"></span></div>
-        </form>
-        <div class="grid2">
-          <div class="panel stack">
-            <h2>Carpetas</h2>
-            <div class="row wrap">
-              <button class="btn" data-folder="juego">Carpeta del juego</button>
-              <button class="btn" data-folder="capturas">Capturas</button>
-              <button class="btn" data-folder="registros">Registros</button>
-            </div>
-            <span class="note mono" id="datadir"></span>
-          </div>
-          <div class="panel stack">
-            <h2>Cuenta</h2>
-            <p class="note" id="acc-detail">Sin sesión.</p>
-            <div class="row"><button class="btn" id="logout" hidden>Cerrar sesión</button></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <div class="foot" id="foot"></div>
-  </div></main>
+    <button class="play" id="play" type="button">Jugar</button>
+    <small id="foot"></small>
+  </footer>
 </div>
+<script src="escena.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,3 @@
+# Claves públicas Ed25519 en las que confía el launcher, una por línea (base64).
+# La clave privada nunca va en el repositorio. Ver docs/SEGURIDAD.md.
+zOkKDE2Z7/szayF9kBr4VRlGok6pvBy/5pvA950KX1c=

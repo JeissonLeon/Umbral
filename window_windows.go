@@ -4,6 +4,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +16,13 @@ import (
 
 const webview2Download = "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
 
-func runWindow(url string, paths Paths) error {
+func runWindow(url string, paths Paths, app *App, onReady func()) error {
+	// Para desarrollar: sirve la interfaz sin ventana.
+	if os.Getenv("UMBRAL_NO_WINDOW") != "" {
+		fmt.Println("Interfaz en", url)
+		onReady()
+		select {}
+	}
 	w := webview2.NewWithOptions(webview2.WebViewOptions{
 		AutoFocus: true,
 		DataPath:  filepath.Join(paths.Root, "webview"),
@@ -36,6 +43,10 @@ func runWindow(url string, paths Paths) error {
 	defer w.Destroy()
 	w.SetSize(900, 600, webview2.HintMin)
 	w.Navigate(url)
+	app.mu.Lock()
+	app.closeWindow = func() { w.Dispatch(w.Terminate) }
+	app.mu.Unlock()
+	onReady()
 	w.Run()
 	return nil
 }

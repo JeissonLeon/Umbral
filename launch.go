@@ -107,10 +107,7 @@ func buildLaunchArgs(paths Paths, cfg Config, acc *Account, vanilla *VersionJSON
 	}
 	features := map[string]bool{"is_quick_play_multiplayer": cfg.Server != ""}
 
-	args := []string{
-		fmt.Sprintf("-Xmx%dm", cfg.MemoryMB),
-		fmt.Sprintf("-Xms%dm", min(cfg.MemoryMB, 2048)),
-	}
+	args := memoryArgs(cfg)
 	args = append(args, resolveArgs(vanilla.Arguments.JVM, vars, features)...)
 	args = append(args, resolveArgs(forge.Arguments.JVM, vars, features)...)
 	args = append(args, forge.MainClass)

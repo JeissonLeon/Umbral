@@ -12,11 +12,12 @@ import (
 
 // Fuera de Windows la interfaz se abre en el navegador; sirve para
 // desarrollar y probar. UMBRAL_NO_BROWSER=1 solo imprime la dirección.
-func runWindow(url string, paths Paths) error {
+func runWindow(url string, paths Paths, app *App, onReady func()) error {
 	fmt.Println("Interfaz en", url)
 	if os.Getenv("UMBRAL_NO_BROWSER") == "" {
 		openPath(url)
 	}
+	onReady()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	<-stop

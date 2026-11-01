@@ -1,0 +1,9 @@
+{
+  "servidor": "play.ejemplo.com",
+  "memoria_mb": 6144,
+  "mods_extra": ["mods/jei.jar"],
+  "modo_inicio": "oficial",
+  "carpeta_minecraft": "C:\\Users\\jugador\\AppData\\Roaming\\.minecraft",
+  "java_ruta": "",
+  "java_argumentos": "-XX:+UseG1GC"
+}

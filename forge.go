@@ -8,11 +8,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"umbral/internal/pack"
 )
 
 // ensureForge instala Forge con su instalador oficial en modo cliente y
 // devuelve el id de la versión instalada (por ejemplo 1.20.1-forge-47.4.10).
-func ensureForge(paths Paths, java, mcVersion, forgeVersion string) (string, error) {
+// expectedSHA256, si viene en el manifiesto firmado, fija el instalador exacto.
+func ensureForge(paths Paths, java, mcVersion, forgeVersion, expectedSHA256 string) (string, error) {
 	id := mcVersion + "-forge-" + forgeVersion
 	hub.stage("Comprobando Forge " + forgeVersion)
 
@@ -32,6 +35,16 @@ func ensureForge(paths Paths, java, mcVersion, forgeVersion string) (string, err
 	}
 	if err := download(Job{URL: base, Dest: installer, SHA1: sum}); err != nil {
 		return "", err
+	}
+	if expectedSHA256 != "" {
+		got, err := pack.HashFile(installer)
+		if err != nil {
+			return "", err
+		}
+		if got != expectedSHA256 {
+			os.Remove(installer)
+			return "", fmt.Errorf("el instalador de Forge no coincide con el publicado: %w", pack.ErrCorrupt)
+		}
 	}
 
 	// El instalador exige un launcher_profiles.json en la carpeta destino.
