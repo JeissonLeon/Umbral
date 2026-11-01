@@ -1,5 +1,5 @@
 {
-  "_comentario": "Rellena github.owner y github.repo. Lo que pongas en contenido/ se sube a GitHub; externos se descarga de su sitio original.",
+  "_comentario": "Lo que pongas en contenido/ se sube a GitHub; externos se descarga de su sitio original.",
   "modpack": {
     "id": "sylvanor3",
     "name": "SylvanΩr 3",
@@ -8,8 +8,8 @@
     "java": 17
   },
   "github": {
-    "owner": "",
-    "repo": ""
+    "owner": "JeissonLeon",
+    "repo": "Umbral"
   },
   "contenido": "contenido",
   "umbralMod": "^mods/umbral_sombras-(.+)[.]jar$",
