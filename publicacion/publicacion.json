@@ -16,12 +16,10 @@
   "seed": [],
   "opcionales": [],
   "novedades": [
-    "Umbral: Sombras 0.4.0, versión de prueba.",
-    "Espadachín: Respiración del Rayo completa con su forma superior, el Trueno Celestial, y el Reino del Trueno.",
-    "Dominios más grandes: 5 chunks de radio el del Monarca y los de las respiraciones; 4 chunks los del Luchador de Votos.",
-    "Los dominios se activan también con mobs normales (zombis, esqueletos...): se pueden probar en un solo jugador.",
-    "Modelos del Luchador de Votos sin grietas e iconos nuevos para el Rayo.",
-    "Las sombras del Monarca recuperan su aspecto con Epic Fight."
+    "Umbral: Sombras 0.5.0, versión de prueba.",
+    "Espadachín: Respiración de Hielo (el Lancero) con sus formas superiores: Aguja del Cero Absoluto, Corona de Agujas Boreales, Siete Espejos, Danza de la Aurora, Clavo del Solsticio Blanco y Cero Absoluto.",
+    "Dominio Glacial, Brújula de Escarcha y Brújula Boreal, con la Apertura Invernal.",
+    "Los clones de hielo llevan lanza y atacan con ella."
   ],
   "externos": [
     {
